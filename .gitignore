@@ -1,0 +1,37 @@
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Node (เผื่อมีในอนาคต)
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Build / dist
+dist/
+build/
+*.zip
+*.tar.gz
+
+# Local secrets (กันการ commit API key พลาด)
+.env
+.env.local
+secrets.json
+api-keys.txt
+*.key
+
+# Logs
+*.log
+
+# Chrome extension build artifacts
+*.crx
+*.pem
+key.pem

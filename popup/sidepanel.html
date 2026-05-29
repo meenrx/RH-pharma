@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RH Pharma</title>
+  <link rel="stylesheet" href="sidepanel.css" />
+  <link rel="stylesheet" href="v10-ui.css" />
+</head>
+<body class="auto-theme">
+
+  <!-- ============= HEADER ============= -->
+  <header class="app-header">
+    <div class="header-brand">
+      <div class="logo-circle">
+        <img src="../assets/logo-icon.png" alt="RH" />
+      </div>
+      <div class="brand-text">
+        <h1>RH Pharma</h1>
+        <p class="subtitle">รพ.รือเสาะ · กลุ่มงานเภสัชกรรม</p>
+      </div>
+    </div>
+    <button class="btn-icon" id="btnSettings" title="ตั้งค่า">
+      <span>⚙️</span>
+    </button>
+  </header>
+
+  <!-- ============= AI MODE TOGGLE ============= -->
+  <div class="ai-toggle-bar">
+    <div class="ai-toggle">
+      <span class="toggle-label" id="aiModeLabel">⚡ ไม่ใช้ AI</span>
+      <label class="switch">
+        <input type="checkbox" id="aiModeToggle" />
+        <span class="slider"></span>
+      </label>
+      <span class="toggle-label-right" id="aiProviderLabel">🤖 ใช้ AI</span>
+    </div>
+  </div>
+
+  <!-- ============= TAB BAR ============= -->
+  <nav class="tab-bar">
+    <button class="tab-btn active" data-tab="topics">✨ สร้างแบบ</button>
+    <button class="tab-btn" data-tab="create">📊 Infographic</button>
+    <button class="tab-btn" data-tab="post">🎬 วิดีโอ</button>
+  </nav>
+
+  <!-- ============= TAB CONTENT ============= -->
+  <main class="tab-content">
+
+    <!-- ===== TAB 1: สร้างแบบ ===== -->
+    <section class="tab-pane active" id="tabTopics">
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-icon">✨</span>
+          <h3>สร้างแบบ</h3>
+        </div>
+
+        <p class="hint" style="margin-bottom: 14px;">
+          ส่งไป Google Flow + Nano Banana Pro — สร้างรูปสื่อให้คำปรึกษาที่ใบหน้าเภสัชกรเหมือนเดิม 100%
+        </p>
+
+        <!-- ① รูปอ้างอิง: นายแบบ + ยา -->
+        <div class="form-section">
+          <div class="section-label">📷 รูปอ้างอิง <span class="required-mark">*</span></div>
+          <div class="image-uploads">
+            <div class="image-upload-card">
+              <div class="image-upload-label">
+                👤 รูปนายแบบ/นางแบบ
+                <span class="image-hint">lock ใบหน้า 100%</span>
+              </div>
+              <div class="image-upload-area" id="modelImageArea">
+                <div class="image-upload-empty">
+                  <span class="upload-icon">📷</span>
+                  <span>คลิกเพื่อเลือกรูป</span>
+                </div>
+                <img id="modelImagePreview" style="display:none;" />
+                <button class="btn-remove-image" id="btnRemoveModel" style="display:none;" title="ลบรูป">✕</button>
+              </div>
+              <input type="file" id="modelImageInput" accept="image/*" style="display:none;" />
+            </div>
+
+            <div class="image-upload-card">
+              <div class="image-upload-label">
+                📦 รูปสิ่งที่จะแนะนำ
+                <span class="image-hint">ยา / สินค้า / อาหารเสริม / ฯลฯ</span>
+              </div>
+              <div class="image-upload-area" id="productImageArea">
+                <div class="image-upload-empty">
+                  <span class="upload-icon">📷</span>
+                  <span>คลิกเพื่อเลือกรูป</span>
+                </div>
+                <img id="productImagePreview" style="display:none;" />
+                <button class="btn-remove-image" id="btnRemoveProduct" style="display:none;" title="ลบรูป">✕</button>
+              </div>
+              <input type="file" id="productImageInput" accept="image/*" style="display:none;" />
+            </div>
+          </div>
+        </div>
+
+        <!-- ② Checkbox: Cover Headline (คืนกลับมาใน v0.9.8) -->
+        <div class="form-section">
+          <label class="check-row-modern">
+            <input type="checkbox" id="optAddCoverText" />
+            <span class="check-label">
+              <strong>📝 ใส่ข้อความบนปก</strong>
+              <span class="hint">AI สร้าง headline สั้นๆ บนรูปเพื่อดึงดูดความสนใจ (Nano Banana render Thai ได้ดี)</span>
+            </span>
+          </label>
+
+          <!-- Headline section — โผล่เมื่อติ๊ก "ใส่ข้อความบนปก" -->
+          <div class="headline-section" id="headlineGroup" style="display:none;">
+            <div class="form-group">
+              <label>📝 ข้อความบนปก (ภาษาไทย)</label>
+              <textarea
+                id="coverHeadlineInput"
+                rows="2"
+                placeholder="เช่น &quot;ยาลดความดัน...กินตอนไหน?&quot; (สั้น 6-8 คำ)"
+              ></textarea>
+              <p class="hint">เว้นว่างได้ — AI จะคิดเองตาม persona ที่เลือก</p>
+            </div>
+
+            <div class="form-group">
+              <label>💬 บอก AI ว่ายานี้คืออะไร (สำหรับให้ AI ช่วยคิด)</label>
+              <textarea
+                id="drugContextInput"
+                rows="2"
+                placeholder="เช่น &quot;Benicardine ลดความดัน กินวันละครั้งก่อนอาหาร&quot;"
+              ></textarea>
+            </div>
+
+            <button class="btn-secondary btn-full" id="btnGenerateHeadline">
+              <span class="btn-content-row">
+                <span class="ai-icon">🤖</span>
+                <span>✨ ให้ AI ช่วยคิด headline (3 แบบ)</span>
+              </span>
+            </button>
+
+            <div class="ai-loading-state" id="headlineLoading" style="display:none;">
+              <div class="ai-spinner"></div>
+              <span>🤖 กำลังคิด headline 3 แบบ...</span>
+            </div>
+
+            <div class="headline-candidates" id="headlineCandidates" style="display:none;">
+              <div class="candidates-header">
+                <strong>🤖 เลือก headline ที่ชอบ:</strong>
+                <button class="btn-text-link" id="btnRegenHeadlines">🔄 สร้างใหม่</button>
+              </div>
+              <div id="headlineCandidatesList">
+                <!-- รายการ candidates -->
+              </div>
+            </div>
+
+            <div class="headline-history" id="headlineHistory" style="display:none;">
+              <details>
+                <summary class="history-summary">
+                  <strong>📜 Headlines ที่เคยสร้าง</strong>
+                  <span class="hint" id="historyCount">0 รายการ</span>
+                </summary>
+                <div id="headlineHistoryList"></div>
+              </details>
+            </div>
+          </div>
+
+          <label class="check-row-modern">
+            <input type="checkbox" id="optChangeOutfit" />
+            <span class="check-label">
+              <strong>👔 เปลี่ยนชุดตัวละครหลัก</strong>
+              <span class="hint">ถ้าไม่ติ๊ก จะใช้ชุดเดิมจากรูปอ้างอิง</span>
+            </span>
+          </label>
+
+          <!-- Dropdown ชุดใหม่ — โผล่เมื่อติ๊ก "เปลี่ยนชุด" -->
+          <div class="form-group" id="outfitGroup" style="display:none; margin-top: 8px;">
+            <label>👕 ชุดใหม่</label>
+            <select id="selPharmacistOutfit"></select>
+            <!-- 🆕 v0.9.21: Custom outfit description -->
+            <textarea id="customOutfitDesc" rows="2" style="display:none; margin-top:8px;"
+              placeholder="อธิบายชุดที่ต้องการ (สำหรับ Custom outfit)"></textarea>
+          </div>
+
+          <!-- 🆕 v0.9.21: Checkbox คนเดียว (ไม่ใช่ "เภสัชกรคนเดียว" แล้ว) -->
+          <label class="check-row-modern">
+            <input type="checkbox" id="optSoloMode" />
+            <span class="check-label">
+              <strong>👤 คนเดียว (ไม่มีคู่สนทนา)</strong>
+              <span class="hint">เหมาะสำหรับสร้างนายแบบเดี่ยวทุกวิชาชีพ</span>
+            </span>
+          </label>
+        </div>
+
+        <!-- ③ Dropdowns ทั้งหมด -->
+        <div class="form-section">
+          <div class="section-label">🎨 รายละเอียดภาพ</div>
+
+          <div class="form-group">
+            <label>🎨 สไตล์รูปภาพ</label>
+            <select id="selImageStyle"></select>
+          </div>
+
+          <div class="form-group">
+            <label>📷 มุมกล้อง</label>
+            <select id="selCameraAngle"></select>
+          </div>
+
+          <div class="form-group">
+            <label>🏞️ พื้นหลัง</label>
+            <select id="selBackground"></select>
+          </div>
+
+          <div class="form-group">
+            <label>📦 ตำแหน่งสิ่งที่จะแนะนำ</label>
+            <select id="selDrugPosition"></select>
+          </div>
+
+          <!-- 🆕 v0.9.21: Profession dropdown -->
+          <div class="form-group">
+            <label>🩺 วิชาชีพของตัวละครหลัก</label>
+            <select id="selProfession"></select>
+          </div>
+
+          <!-- Custom Visual DNA panel — โผล่เมื่อเลือก custom -->
+          <div class="form-group" id="customProfessionGroup" style="display:none;">
+            <label>📝 อธิบายตัวละคร (สำหรับ Custom)</label>
+            <textarea id="customProfessionDesc" rows="3" 
+              placeholder="เช่น พยาบาลหญิง อายุ 35 สวมฮิญาบเขียว ผิวสีน้ำตาล สีหน้าใจดี"></textarea>
+            <button type="button" class="btn-secondary btn-full" id="btnAIGenVisualDNA">
+              <span class="btn-content-row">
+                <span class="ai-icon">✨</span>
+                <span>AI ช่วย gen Visual DNA</span>
+              </span>
+            </button>
+          </div>
+
+          <div class="form-group">
+            <label>🧍 ท่าทางตัวละครหลัก</label>
+            <select id="selModelPose"></select>
+          </div>
+
+          <!-- กลุ่มที่ซ่อนเมื่อ Solo mode -->
+          <div id="partnerSection">
+            <div class="form-group">
+              <label>🧑‍🤝‍🧑 ท่าทางคู่สนทนา</label>
+              <select id="selPartnerPose"></select>
+            </div>
+
+            <div class="form-group">
+              <label>🎭 จัดวางตัวละครในเฟรม</label>
+              <select id="selCharacterPosition"></select>
+              <p class="hint">default = ให้ AI จัดเอง (เลือกถ้าต้องการระบุชัดเจน)</p>
+            </div>
+
+            <div class="form-group">
+              <label>👥 กลุ่มเป้าหมาย / คู่สนทนา</label>
+              <select id="selAudience"></select>
+              <p class="hint">ระบบจะสร้าง persona ของคู่สนทนาให้อัตโนมัติ</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ④ อัตราส่วน -->
+        <div class="form-section">
+          <div class="section-label">📐 อัตราส่วน</div>
+          <div class="ratio-options" id="ratioOptions">
+            <!-- render จาก JS -->
+          </div>
+        </div>
+
+        <!-- ⑤ จำนวนภาพ -->
+        <div class="form-section">
+          <div class="section-label">🔢 จำนวนภาพที่สร้าง</div>
+          <div class="count-options" id="countOptions">
+            <!-- render จาก JS -->
+          </div>
+        </div>
+
+        <!-- ⑦ ดู prompt -->
+        <button class="btn-secondary btn-full" id="btnPreviewModelPrompt" style="margin-bottom: 8px;">
+          👁️ ดู / แก้ prompt ก่อนสร้างแบบ
+        </button>
+
+        <!-- ⑧ ปุ่มสร้างแบบ -->
+        <button class="btn-primary btn-full btn-create-model" id="btnCreateModel">
+          ✨ สร้างแบบ → ส่งไป Flow
+        </button>
+        <p class="hint" style="text-align:center; margin-top:8px;" id="createModelHint">
+          เลือกรูปนายแบบ + รูปสิ่งที่จะแนะนำ แล้วกดสร้างแบบ
+        </p>
+
+      </div>
+
+      <!-- ===== Modal: ดู / แก้ Prompt ===== -->
+      <div class="modal" id="modelPromptModal" style="display:none;">
+        <div class="modal-card modal-card-large">
+          <div class="modal-header">
+            <h3>👁️ Prompt ที่จะส่งไป Flow</h3>
+            <button class="modal-close" id="btnCloseModelPrompt">✕</button>
+          </div>
+          <div class="modal-body">
+            <p class="hint">
+              ปรับแก้ prompt ได้ตามต้องการ — ระบบจะ paste ข้อความนี้ลงใน Flow โดยตรง
+            </p>
+            <textarea id="modelPromptText" rows="20"></textarea>
+            <div class="modal-footer-row">
+              <button class="btn-secondary" id="btnResetModelPrompt">🔄 สร้างใหม่จากตัวเลือก</button>
+              <button class="btn-primary" id="btnSendModelFromModal">✨ สร้างแบบ → ส่งไป Flow</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ===== TAB 2: สร้างสื่อ Infographic (v0.8.6) ===== -->
+    <section class="tab-pane" id="tabCreate">
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-icon">📊</span>
+          <h3>สร้าง Infographic</h3>
+        </div>
+
+        <p class="hint" style="margin-bottom: 14px;">
+          สร้าง Infographic ความรู้ด้านสุขภาพและยา → ส่งไป Flow + Nano Banana Pro
+        </p>
+
+        <!-- ① หัวข้อ + ปุ่ม AI ช่วยขยาย -->
+        <div class="form-section">
+          <div class="section-label">📌 หัวข้อ Infographic <span class="required-mark">*</span></div>
+          <textarea
+            id="infoTopicInput"
+            rows="6"
+            placeholder="พิมพ์หัวข้อสั้นๆ เช่น &quot;ยาความดัน 3 ข้อต้องระวัง&quot;
+&#10;
+หรือกดปุ่ม &quot;🤖 AI ช่วยขยาย&quot; เพื่อให้ AI ค้นหาและสรุปเนื้อหาให้"
+          ></textarea>
+          <p class="hint">เว้นว่างได้ — AI จะค้นหาเนื้อหาให้ตอนสร้าง</p>
+
+          <button class="btn-secondary btn-full" id="btnExpandInfoTopic" style="margin-top: 8px;">
+            <span class="btn-content-row">
+              <span class="ai-icon">🤖</span>
+              <span>✨ ให้ AI ช่วยขยายเนื้อหา</span>
+            </span>
+          </button>
+
+          <!-- Loading -->
+          <div class="ai-loading-state" id="infoTopicLoading" style="display:none;">
+            <div class="ai-spinner"></div>
+            <span>🤖 กำลังค้นข้อมูลและขยายเนื้อหา...</span>
+          </div>
+        </div>
+
+        <!-- ②.1 กลุ่มเป้าหมาย (v0.9.12) -->
+        <div class="form-section">
+          <div class="section-label">🎯 กลุ่มเป้าหมาย <span class="required-mark">*</span></div>
+          <select id="selInfoAudience"></select>
+          <p class="hint">AI จะปรับดีไซน์ + เนื้อหาให้เหมาะกับกลุ่มที่เลือก</p>
+
+          <!-- 🆕 v0.9.23: Custom audience panel — โผล่เมื่อเลือก custom_audience -->
+          <div id="customInfoAudienceGroup" style="display:none; margin-top: 8px;">
+            <label>📝 อธิบายกลุ่มเป้าหมาย</label>
+            <textarea id="customInfoAudienceDesc" rows="3"
+              placeholder="เช่น คุณแม่มือใหม่ที่กังวลเรื่องการเลี้ยงลูก / นักเรียนที่ชอบเล่นเกม / เกษตรกรในชุมชนภาคใต้"></textarea>
+            <button type="button" class="btn-secondary btn-full" id="btnAIGenInfoAudience">
+              <span class="btn-content-row">
+                <span class="ai-icon">✨</span>
+                <span>AI ช่วย gen รายละเอียดกลุ่มเป้าหมาย</span>
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <!-- ② Dropdowns: สไตล์ + ธีม -->
+        <div class="form-section">
+          <div class="section-label">🎨 รูปลักษณ์ภาพ</div>
+
+          <div class="form-group">
+            <label>🎨 สไตล์ภาพ</label>
+            <select id="selInfoStyle"></select>
+          </div>
+
+          <!-- 🆕 v0.9.23: Custom style textarea — โผล่เมื่อเลือก custom_style -->
+          <div class="form-group" id="customInfoStyleGroup" style="display:none;">
+            <label>📝 อธิบายสไตล์ภาพ</label>
+            <textarea id="customInfoStyleDesc" rows="2"
+              placeholder="เช่น สไตล์ Studio Ghibli + โทนพาสเทล / สไตล์ flat 2D + สีเขียวมะนาว"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>🎭 ธีม / พื้นหลัง</label>
+            <select id="selInfoTheme"></select>
+            <p class="hint">เว้นว่างได้ — AI จะกำหนดให้เหมาะกับเนื้อหา</p>
+          </div>
+
+          <!-- 🆕 v0.9.24: Custom theme textarea — โผล่เมื่อเลือก custom_theme -->
+          <div class="form-group" id="customInfoThemeGroup" style="display:none;">
+            <label>📝 อธิบายธีม / พื้นหลัง</label>
+            <textarea id="customInfoThemeDesc" rows="3"
+              placeholder="ตัวอย่าง: 
+• โทนสีเขียวมะนาว+ขาว มีลายใบไม้ที่มุม รูปทรงโค้งมน เน้นความสะอาด
+• พื้นหลังกระดาษสีน้ำตาลครีม ลายเส้นวินเทจ icon โบราณ
+• โทนน้ำเงินไล่เป็นม่วง มีแสงนีออน hi-tech futuristic
+• พื้นหลังเรียบ + กรอบลายไทยทอง สีพื้นแดงเข้ม ดูสูงส่ง"></textarea>
+            <p class="hint">💡 แนะนำใส่: โทนสี + บรรยากาศ + element ที่อยากให้มี</p>
+          </div>
+        </div>
+
+        <!-- ③ อัตราส่วน -->
+        <div class="form-section">
+          <div class="section-label">📐 อัตราส่วน</div>
+          <div class="ratio-options" id="infoRatioOptions">
+            <!-- render จาก JS -->
+          </div>
+        </div>
+
+        <!-- ④ จำนวนภาพ -->
+        <div class="form-section">
+          <div class="section-label">🔢 จำนวนภาพที่สร้าง</div>
+          <div class="count-options" id="infoCountOptions">
+            <!-- render จาก JS -->
+          </div>
+        </div>
+
+        <!-- ⑤ ปุ่มดู prompt -->
+        <button class="btn-secondary btn-full" id="btnPreviewInfoPrompt" style="margin-bottom: 8px;">
+          👁️ ดู / แก้ prompt ก่อนสร้าง
+        </button>
+
+        <!-- ⑥ ปุ่มสร้าง -->
+        <button class="btn-primary btn-full btn-create-model" id="btnCreateInfo">
+          ✨ สร้าง Infographic → ส่งไป Flow
+        </button>
+        <p class="hint" style="text-align:center; margin-top:8px;" id="createInfoHint">
+          พิมพ์หัวข้อ (หรือเว้นว่าง) แล้วกดสร้าง
+        </p>
+
+      </div>
+
+      <!-- ===== Modal: ดู / แก้ Prompt Infographic ===== -->
+      <div class="modal" id="infoPromptModal" style="display:none;">
+        <div class="modal-card modal-card-large">
+          <div class="modal-header">
+            <h3>👁️ Prompt ที่จะส่งไป Flow</h3>
+            <button class="modal-close" id="btnCloseInfoPrompt">✕</button>
+          </div>
+          <div class="modal-body">
+            <p class="hint">
+              ปรับแก้ prompt ได้ตามต้องการ — ระบบจะ paste ข้อความนี้ลงใน Flow
+            </p>
+            <textarea id="infoPromptText" rows="20"></textarea>
+            <div class="modal-footer-row">
+              <button class="btn-secondary" id="btnResetInfoPrompt">🔄 สร้างใหม่จากตัวเลือก</button>
+              <button class="btn-primary" id="btnSendInfoFromModal">✨ สร้าง → ส่งไป Flow</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+
+    <!-- ===== TAB 3: 🎬 วิดีโอ (v0.9.1) ===== -->
+    <section class="tab-pane" id="tabPost">
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-icon">🎬</span>
+          <h3>สร้างวิดีโอ 4 ฉาก</h3>
+        </div>
+
+        <p class="hint" style="margin-bottom: 14px;">
+          AI สร้างบทพูด 4 ฉาก พร้อมอารมณ์ + มุมกล้อง → ส่งไป Flow Veo 3.1<br>
+          <strong>ผู้ใช้กด "Start" บน Flow เลือกรูปนายแบบเอง</strong> (ไม่ต้องอัพในนี้)
+        </p>
+
+        <!-- ① เนื้อหาเรื่อง + คีย์เวิร์ด -->
+        <div class="form-section">
+          <div class="section-label">📌 เนื้อหาเรื่อง <span class="required-mark">*</span></div>
+          <textarea
+            id="videoTopicInput"
+            rows="3"
+            placeholder="เช่น &quot;อธิบายการกินยาความดัน — เน้นว่าต้องกินทุกวันแม้ไม่มีอาการ&quot;"
+          ></textarea>
+          <p class="hint">บอก AI ว่าจะสื่อเรื่องอะไร (เป็นไกด์ในการสร้าง 4 ฉาก)</p>
+
+          <div class="form-group" style="margin-top: 10px;">
+            <label>🎯 คีย์เวิร์ดสำคัญ (optional)</label>
+            <input type="text" id="videoKeywordsInput" placeholder="เช่น Benicardine, ความดัน, กินทุกวัน, ห้ามหยุดเอง" />
+          </div>
+
+          <div class="form-group" id="videoAudienceFormGroup">
+            <label>👥 กลุ่มเป้าหมาย / คู่สนทนา</label>
+            <select id="selVideoAudience"></select>
+          </div>
+        </div>
+
+        <!-- 🆕 v0.9.25: Solo Mode toggle -->
+        <div class="form-section">
+          <label class="check-row-modern">
+            <input type="checkbox" id="optVideoSoloMode" />
+            <span class="check-label">
+              <strong>👤 โหมดคนเดียว (4 บทพูดต่อเนื่อง — no listener)</strong>
+              <span class="hint">ใช้คู่กับ "Tab สร้างแบบ → คนเดียว" — ตัวละครหลักพูดต่อเนื่อง 4 บท ฉากเดียวกัน เพื่อ stitch เป็น clip ยาว</span>
+            </span>
+          </label>
+        </div>
+
+        <!-- ② Dialect (radio) -->
+        <div class="form-section">
+          <div class="section-label">🗣️ ภาษา/สำเนียงบทพูด</div>
+          <div class="dialect-options" id="videoDialectOptions">
+            <!-- render จาก JS — radio buttons -->
+          </div>
+        </div>
+
+        <!-- ②.5 เพศตัวละครหลัก -->
+        <div class="form-section">
+          <div class="section-label">🎭 เพศตัวละครหลัก</div>
+          <div class="gender-options" id="videoGenderOptions">
+            <!-- render จาก JS -->
+          </div>
+          <p class="hint" style="color: #D97706; margin-top: 6px;">
+            ⚠️ ตรวจให้ตรงกับรูปนายแบบที่จะเลือกใน Flow<br>
+            (ชาย → "ครับ/ผม" / หญิง → "ค่ะ/ดิฉัน")
+          </p>
+        </div>
+
+        <!-- ②.6 เพศคู่สนทนา (v0.9.4) — ซ่อนเมื่อ Solo Mode -->
+        <div class="form-section" id="videoListenerSection">
+          <div class="section-label">👥 เพศคู่สนทนา (ผู้รับคำปรึกษา) <span class="required-mark">*</span></div>
+          <div class="gender-options" id="videoListenerGenderOptions">
+            <!-- render จาก JS — ไม่มี default ต้องเลือกก่อนถึง gen ได้ -->
+          </div>
+          <p class="hint" style="color: #D97706; margin-top: 6px;">
+            ⚠️ บังคับเลือก — ใช้สำหรับฉากที่คู่สนทนาเป็นคนพูด
+          </p>
+        </div>
+
+        <!-- ②.7 Visual DNA (v0.9.8) -->
+        <div class="form-section">
+          <div class="section-label">🧬 ลักษณะตัวละคร (Visual DNA)</div>
+          <select id="videoVisualDNAPreset" class="visual-dna-preset">
+            <!-- render จาก JS แบบ optgroup -->
+          </select>
+          <textarea
+            id="videoVisualDNAText"
+            class="visual-dna-text"
+            rows="4"
+            placeholder="Visual DNA description (ภาษาอังกฤษ) — ใช้ตามรูปนายแบบที่จะแนบใน Flow"
+          ></textarea>
+          <p class="hint">
+            💡 เลือก preset ที่ตรงกับรูปนายแบบที่จะใช้ใน Flow มากที่สุด — แก้ใน textarea ได้
+          </p>
+        </div>
+
+        <!-- ③ Style + Ratio + Count -->
+        <div class="form-section">
+          <div class="form-group">
+            <label>🎨 สไตล์วิดีโอ</label>
+            <select id="selVideoStyle"></select>
+          </div>
+
+          <div class="section-label" style="margin-top: 12px;">📐 อัตราส่วน</div>
+          <div class="ratio-options" id="videoRatioOptions">
+            <!-- render จาก JS -->
+          </div>
+
+          <div class="section-label" style="margin-top: 12px;">🔢 จำนวนคลิป/ฉาก</div>
+          <div class="count-options" id="videoCountOptions">
+            <!-- render จาก JS -->
+          </div>
+        </div>
+
+        <!-- ③.5 Background mode (v0.9.13) -->
+        <div class="form-section">
+          <div class="section-label">🌆 พื้นหลังในแต่ละฉาก</div>
+          <div class="bg-mode-options" id="videoBgModeOptions">
+            <label class="bg-mode-radio">
+              <input type="radio" name="videoBgMode" value="same" checked />
+              <span>
+                <strong>📷 พื้นหลังเดียวกันทั้ง 4 ฉาก</strong>
+                <span class="hint">ใช้ฉากตามรูปนายแบบที่แนบใน Flow</span>
+              </span>
+            </label>
+            <label class="bg-mode-radio">
+              <input type="radio" name="videoBgMode" value="perScene" />
+              <span>
+                <strong>🎬 พื้นหลังคนละแบบในแต่ละฉาก</strong>
+                <span class="hint">AI แนะนำตามบริบทฉาก แก้ไขได้</span>
+              </span>
+            </label>
+          </div>
+        </div>
+
+        <!-- ④ ปุ่ม AI สร้างบทพูด 4 ฉาก -->
+        <button class="btn-primary btn-full" id="btnGenerateVideoScenes">
+          <span class="btn-content-row">
+            <span class="ai-icon">✨</span>
+            <span>AI สร้างบทพูด + อารมณ์ + มุมกล้อง (4 ฉาก)</span>
+          </span>
+        </button>
+
+        <!-- Loading -->
+        <div class="ai-loading-state" id="videoScenesLoading" style="display:none;">
+          <div class="ai-spinner"></div>
+          <span>🎬 กำลังเขียนบทพูด 4 ฉาก...</span>
+        </div>
+
+        <!-- ⑤ ผลลัพธ์ AI: 4 scene cards -->
+        <div id="videoScenesContainer" style="display:none;">
+
+          <div class="form-section" style="margin-top: 14px;">
+            <div class="scenes-header">
+              <strong>🎬 4 ฉาก — แก้ไขได้</strong>
+              <button class="btn-text-link" id="btnRegenAllScenes">🔄 สร้างใหม่ทั้งหมด</button>
+            </div>
+            <div id="videoScenesList">
+              <!-- render scene cards จาก JS -->
+            </div>
+          </div>
+
+          <!-- ⑥ 4 ปุ่มส่งไป Flow -->
+          <div class="form-section">
+            <div class="section-label">🚀 ส่งไป Flow ทีละฉาก</div>
+            <p class="hint" style="margin-bottom: 8px;">
+              กดทีละปุ่ม → ระบบ copy prompt + ตั้งค่า Flow ให้ → ผู้ใช้กด Start เลือกรูป → Ctrl+V → submit
+            </p>
+            <div class="scene-buttons-grid" id="videoSceneButtons">
+              <!-- render 4 buttons จาก JS -->
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+  </main>
+
+  <!-- ============= FOOTER ============= -->
+  <footer class="app-footer">
+    <span class="credit">
+      Made with 💙 by <strong>MeenRx</strong>
+    </span>
+  </footer>
+
+  <!-- ============= SETTINGS MODAL ============= -->
+  <div class="modal" id="settingsModal" style="display: none;">
+    <div class="modal-content">
+      <header class="modal-header">
+        <h2>⚙️ ตั้งค่า</h2>
+        <button class="btn-icon" id="btnCloseSettings">✕</button>
+      </header>
+
+      <div class="modal-body">
+
+        <!-- Theme -->
+        <div class="settings-section">
+          <h3>🎨 ธีม</h3>
+          <div class="theme-selector">
+            <button class="theme-btn" data-theme="light">
+              <span class="theme-icon">☀️</span>
+              <span>Light</span>
+            </button>
+            <button class="theme-btn" data-theme="dark">
+              <span class="theme-icon">🌙</span>
+              <span>Dark</span>
+            </button>
+            <button class="theme-btn active" data-theme="auto">
+              <span class="theme-icon">🌓</span>
+              <span>Auto</span>
+            </button>
+          </div>
+          <p class="hint" style="margin-top: 8px;">Auto = ตามระบบ (สลับอัตโนมัติเมื่อโหมดมืดของระบบเปลี่ยน)</p>
+        </div>
+
+        <!-- AI Provider (สำหรับ generate เนื้อหา/prompt) -->
+        <div class="settings-section">
+          <h3>🤖 AI Provider (สร้างเนื้อหา)</h3>
+          <div class="provider-tabs">
+            <button class="provider-tab active" data-provider="openai">⚡ OpenAI</button>
+            <button class="provider-tab" data-provider="claude">🟣 Claude</button>
+          </div>
+
+          <div class="provider-pane active" id="paneOpenai">
+            <div class="form-group">
+              <label>🔑 OpenAI API Key</label>
+              <input type="password" id="openaiKey" placeholder="sk-..." />
+              <p class="hint">เก็บไว้ในเครื่องนี้เท่านั้น ไม่ส่งไปไหน</p>
+            </div>
+            <div class="form-group">
+              <label>Model</label>
+              <select id="openaiModel">
+                <option value="gpt-4o-mini">gpt-4o-mini (เร็ว ราคาถูก)</option>
+                <option value="gpt-4o">gpt-4o (ดีสุด)</option>
+                <option value="gpt-4-turbo">gpt-4-turbo</option>
+              </select>
+            </div>
+            <div class="btn-row">
+              <button class="btn-success btn-small" id="btnSaveOpenai">💾 บันทึก</button>
+              <button class="btn-secondary btn-small" id="btnTestOpenai">🔍 เช็คสถานะ</button>
+              <button class="btn-danger btn-small" id="btnClearOpenai">🗑️ ลบ Key</button>
+            </div>
+          </div>
+
+          <div class="provider-pane" id="paneClaude">
+            <div class="form-group">
+              <label>🔑 Claude API Key</label>
+              <input type="password" id="claudeKey" placeholder="sk-ant-..." />
+              <p class="hint">สมัครที่ console.anthropic.com (เสียเงิน — แต่ภาษาไทยดีที่สุด)</p>
+            </div>
+            <div class="form-group">
+              <label>Model</label>
+              <select id="claudeModel">
+                <option value="claude-haiku-4-5">claude-haiku-4-5 (เร็ว ราคาถูก แนะนำ)</option>
+                <option value="claude-sonnet-4-6">claude-sonnet-4-6 (กลาง)</option>
+                <option value="claude-opus-4-7">claude-opus-4-7 (ดีสุด)</option>
+              </select>
+            </div>
+            <div class="btn-row">
+              <button class="btn-success btn-small" id="btnSaveClaude">💾 บันทึก</button>
+              <button class="btn-secondary btn-small" id="btnTestClaude">🔍 เช็คสถานะ</button>
+              <button class="btn-danger btn-small" id="btnClearClaude">🗑️ ลบ Key</button>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-top: 12px;">
+            <label>🎯 Provider ที่ใช้เป็นหลัก</label>
+            <select id="defaultProvider">
+              <option value="openai">⚡ OpenAI</option>
+              <option value="claude">🟣 Claude (ภาษาไทยดีที่สุด)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Privacy & Anti-Detect -->
+        <div class="settings-section">
+          <h3>🔐 ความเป็นส่วนตัว & ตรวจจับบอท</h3>
+
+          <label class="switch-row">
+            <div>
+              <strong>🖥️ เบลอหน้าเว็บปลายทางขณะทำงาน</strong>
+              <p class="hint">เบลอหน้า Facebook/TikTok/Gemini ตอน Extension คุมเว็บ (กันคนข้างๆ มอง)</p>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="blurOnRecord" />
+              <span class="slider"></span>
+            </label>
+          </label>
+
+          <label class="switch-row">
+            <div>
+              <strong>🛡️ Anti-Detect (หลบบอท)</strong>
+              <p class="hint">ใส่ random delay + behaviors เลียนมนุษย์ ตอนคุมเว็บ FB/TikTok</p>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="antiDetect" checked />
+              <span class="slider"></span>
+            </label>
+          </label>
+
+          <div class="form-group" style="margin-top: 10px;">
+            <label>⏱️ Random Delay Range (มิลลิวินาที)</label>
+            <div style="display: flex; gap: 6px; align-items: center;">
+              <input type="number" id="delayMin" value="800" min="100" max="10000" step="100" style="flex: 1;" placeholder="ต่ำสุด" />
+              <span style="color: var(--text-tertiary); font-size: 12px;">ถึง</span>
+              <input type="number" id="delayMax" value="2000" min="100" max="20000" step="100" style="flex: 1;" placeholder="สูงสุด" />
+            </div>
+          </div>
+
+          <button class="btn-success btn-full" id="btnSaveAntiDetect" style="margin-top: 10px;">
+            💾 บันทึก
+          </button>
+        </div>
+
+        <!-- Test Features -->
+        <div class="settings-section">
+          <h3>🧪 ทดสอบฟีเจอร์</h3>
+          <p class="hint" style="margin-bottom: 10px;">กดปุ่มด้านล่างเพื่อทดสอบ — แต่ละปุ่มจะแสดงผลให้เห็นทันที</p>
+
+          <div class="test-buttons">
+            <button class="btn-test" id="btnTestBlur">
+              <span class="test-icon">🖥️</span>
+              <div class="test-text">
+                <strong>ทดสอบเบลอหน้าเว็บ</strong>
+                <span class="hint">เบลอแท็บที่กำลังเปิดอยู่ 3 วินาที</span>
+              </div>
+            </button>
+
+            <button class="btn-test" id="btnTestDelay">
+              <span class="test-icon">⏱️</span>
+              <div class="test-text">
+                <strong>ทดสอบ Random Delay</strong>
+                <span class="hint" id="testDelayResult">วัดเวลาที่ Anti-Detect รอจริง</span>
+              </div>
+            </button>
+
+            <button class="btn-test" id="btnTestToast">
+              <span class="test-icon">📢</span>
+              <div class="test-text">
+                <strong>ทดสอบ Toast</strong>
+                <span class="hint">แสดง notification ทุกประเภท</span>
+              </div>
+            </button>
+
+            <button class="btn-test" id="btnTestSpinner">
+              <span class="test-icon">⏳</span>
+              <div class="test-text">
+                <strong>ทดสอบ Spinner ใน Side Panel</strong>
+                <span class="hint">เห็นวงกลมหมุนของ Side Panel 2 วิ</span>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Safety -->
+        <div class="settings-section">
+          <h3>🔒 ความปลอดภัย</h3>
+
+          <label class="switch-row">
+            <div>
+              <strong>บังคับ Approve ก่อนโพสต์</strong>
+              <p class="hint">แนะนำให้เปิดเสมอ เพราะเป็นเรื่องสุขภาพ</p>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="approvalMode" checked />
+              <span class="slider"></span>
+            </label>
+          </label>
+
+          <label class="switch-row">
+            <div>
+              <strong>ตรวจสอบเนื้อหาก่อนโพสต์</strong>
+              <p class="hint">เช็คคำเคลมเกินจริง, ขนาดยาผิด</p>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="contentValidator" checked />
+              <span class="slider"></span>
+            </label>
+          </label>
+
+          <label class="switch-row">
+            <div>
+              <strong>ใส่ Disclaimer อัตโนมัติ</strong>
+              <p class="hint">เพิ่ม "ปรึกษาเภสัช/แพทย์" ทุกโพสต์</p>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="autoDisclaimer" checked />
+              <span class="slider"></span>
+            </label>
+          </label>
+        </div>
+
+        <!-- Branding -->
+        <div class="settings-section">
+          <h3>🏥 Branding</h3>
+          <div class="form-group">
+            <label>ชื่อโรงพยาบาล</label>
+            <input type="text" id="hospitalName" />
+          </div>
+          <div class="form-group">
+            <label>ชื่อกลุ่มงาน</label>
+            <input type="text" id="department" />
+          </div>
+          <div class="form-group">
+            <label>Hashtag ประจำ</label>
+            <input type="text" id="hashtag" placeholder="#รพรือเสาะ #เภสัชกรรม" />
+          </div>
+          <div class="form-group">
+            <label>Disclaimer ประจำ</label>
+            <textarea id="defaultDisclaimer" rows="2"></textarea>
+          </div>
+          <button class="btn-success btn-full" id="btnSaveBranding">💾 บันทึก Branding</button>
+        </div>
+
+        <!-- Danger Zone -->
+        <div class="settings-section danger-zone">
+          <h3>⚠️ Danger Zone</h3>
+          <button class="btn-danger btn-full" id="btnResetAll">
+            🔄 รีเซ็ตข้อมูลทั้งหมด
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ============= TOAST ============= -->
+  <div class="toast" id="toast"></div>
+
+  <!-- ============= BUSY OVERLAY (เบลอตอนทำงาน) ============= -->
+  <div class="busy-overlay" id="busyOverlay">
+    <div class="busy-card">
+      <div class="busy-spinner"></div>
+      <div class="busy-text" id="busyText">กำลังประมวลผล...</div>
+      <div class="busy-hint">โปรดรอสักครู่</div>
+    </div>
+  </div>
+
+  <!-- Core (v0.9.x) -->
+  <script src="ai-helper.js"></script>
+  <script src="templates.js"></script>
+  <script src="model-options.js"></script>
+
+  <!-- v0.10.0 modules -->
+  <script src="clip-warehouse.js"></script>
+  <script src="content-validator.js"></script>
+  <script src="disclaimer-injector.js"></script>
+  <script src="pharma-prompt-library.js"></script>
+  <script src="cover-text-styles.js"></script>
+  <script src="story-series.js"></script>
+  <script src="schedule-queue.js"></script>
+  <script src="podcast-generator.js"></script>
+  <script src="humanize-delay.js"></script>
+  <script src="rh-toolbox.js"></script>
+
+  <script src="sidepanel.js"></script>
+  <script src="sidepanel-v10.js"></script>
+</body>
+</html>
