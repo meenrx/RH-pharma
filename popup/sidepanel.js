@@ -3224,18 +3224,21 @@ function populateSettingsValues() {
 // =====================================================
 async function init() {
   // helper: try-catch wrapper เพื่อให้ฟังก์ชันเดียวล้มไม่ทำลายทุกอย่าง
-  const safe = (label, fn) => {
+  // v0.10.0 fix: คืน Promise เสมอ เพื่อให้ `await safe(...)` รอจนเสร็จจริง
+  const safe = async (label, fn) => {
     try {
-      const r = fn();
-      if (r && typeof r.catch === 'function') {
-        r.catch(e => console.error(`[RH Pharma] ${label} failed:`, e));
-      }
+      return await fn();
     } catch (e) {
       console.error(`[RH Pharma] ${label} failed:`, e);
     }
   };
 
   await safe('loadFromStorage', loadFromStorage);
+
+  // กัน STATE.settings เป็น null (กรณี first install + service worker ยังไม่เซ็ต default)
+  if (!STATE.settings || typeof STATE.settings !== 'object') {
+    STATE.settings = {};
+  }
 
   // ใช้ theme ตามที่บันทึกไว้ (default = dark)
   await safe('applyTheme', () => applyTheme(STATE.settings.theme || 'dark'));
