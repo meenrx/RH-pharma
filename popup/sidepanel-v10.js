@@ -21,7 +21,12 @@
     'v10-validator': { label: '🛡️', tip: 'ตรวจสอบ', renderer: renderValidator }
   };
 
-  document.addEventListener('DOMContentLoaded', init);
+  // v0.10.0 fix: guard กรณี DOMContentLoaded fire ไปแล้ว (script อยู่ end of body)
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
 
   function init() {
     // 1. รอ DOM พร้อม + tab bar เดิม
@@ -96,16 +101,31 @@
         // toggle .active บนทุก pane (ลบของเดิมและของ v10 ออกหมด แล้วเปิดของ v10 ที่เลือก)
         document.querySelectorAll('.tab-pane').forEach(p => p.classList.toggle('active', p.id === tab));
 
-        V10Tabs[tab].renderer(document.getElementById(tab));
+        safeRender(tab, V10Tabs[tab].renderer, document.getElementById(tab));
       }, true);
     });
+  }
+
+  // ===== Wrapper เพื่อกัน render ตัวใดล้มแล้วทำลายทั้ง side panel =====
+  async function safeRender(label, renderer, pane) {
+    if (!pane) return;
+    try {
+      await renderer(pane);
+    } catch (e) {
+      console.error(`[v10-ui] render(${label}) failed:`, e);
+      pane.innerHTML = `<div class="v10-empty">
+        <span class="v10-empty-icon">⚠️</span>
+        <div>เกิดข้อผิดพลาด — เปิด DevTools console ดู</div>
+        <div style="font-size:11px;margin-top:6px;opacity:.7;">${String(e && e.message || e).replace(/[<>]/g, '')}</div>
+      </div>`;
+    }
   }
 
   async function refreshAllTabs() {
     for (const [id, def] of Object.entries(V10Tabs)) {
       const pane = document.getElementById(id);
       if (!pane || !pane.classList.contains('active')) continue;
-      def.renderer(pane);
+      safeRender(id, def.renderer, pane);
     }
   }
 

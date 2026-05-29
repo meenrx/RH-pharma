@@ -284,5 +284,7 @@ console.log('[RHToolbox] loaded — ใช้งานผ่าน RHToolbox.* �
 
 // auto self-test เมื่อ side panel เปิด
 setTimeout(() => {
-  if (window.RHToolbox) window.RHToolbox.quickTest();
+  if (window.RHToolbox) {
+    Promise.resolve(window.RHToolbox.quickTest()).catch(e => console.warn('[RHToolbox] quickTest:', e));
+  }
 }, 1000);
