@@ -76,21 +76,28 @@
     }
   }
 
-  // ===== Hook click ของแท็บใหม่ + override switch logic =====
+  // ===== Hook click ของแท็บใหม่ — handle เฉพาะของ v10 =====
+  // เหตุผล: sidepanel.js เดิมมี setupTabs() ที่ผูก click กับทุก .tab-btn ไปแล้ว
+  //         และใช้ pattern "tab" + capitalize(tab) ในการหา pane ของตัวเอง
+  //         ถ้าเราทำ active-toggle ทับแบบไม่เลือก จะไปลบ .active ของ pane เดิมตอนคลิกแท็บเดิม
+  //         ดังนั้นเราจัดการเฉพาะแท็บของ v10 + ใช้ stopImmediatePropagation บนแท็บ v10
+  //         เพื่อไม่ให้ listener ของเดิมไปหา pane "tabV10-xxx" ที่ไม่มีอยู่
   function wireUpClicks() {
     document.querySelectorAll('.tab-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const tab = btn.dataset.tab;
-        if (!tab) return;
-        // toggle .active บนทุกปุ่ม
+      const tab = btn.dataset.tab;
+      if (!tab || !V10Tabs[tab]) return;   // ปล่อยให้ของเดิม handle
+
+      // capture phase + stopImmediatePropagation → กัน setupTabs ของเดิมรันต่อ
+      btn.addEventListener('click', (ev) => {
+        ev.stopImmediatePropagation();
+
+        // toggle .active บนทุก tab-btn
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b === btn));
-        // toggle .active บนทุก pane
+        // toggle .active บนทุก pane (ลบของเดิมและของ v10 ออกหมด แล้วเปิดของ v10 ที่เลือก)
         document.querySelectorAll('.tab-pane').forEach(p => p.classList.toggle('active', p.id === tab));
-        // ถ้าเป็นแท็บใหม่ — render
-        if (V10Tabs[tab]) {
-          V10Tabs[tab].renderer(document.getElementById(tab));
-        }
-      });
+
+        V10Tabs[tab].renderer(document.getElementById(tab));
+      }, true);
     });
   }
 
