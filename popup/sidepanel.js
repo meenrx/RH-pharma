@@ -2976,14 +2976,25 @@ async function sendVideoSceneToFlow(sceneIdx, btnElement) {
 // =====================================================
 
 // Apply theme (light / dark / auto-from-system)
+// v0.10.0 fix: CSS ใช้ selector "body.dark" / "body.auto-theme[data-system-theme=dark]"
+// เดิม set data-theme บน html → ไม่ match → สีไม่เปลี่ยน
 async function applyTheme(theme) {
   const root = document.documentElement;
+  const body = document.body;
   let effective = theme;
   if (theme === 'auto') {
     effective = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   }
-  root.setAttribute('data-theme', effective);
-  STATE.settings.theme = theme;
+  // toggle body class ที่ CSS selector อ้างถึง
+  body.classList.remove('auto-theme', 'dark', 'light');
+  if (theme === 'auto') {
+    body.classList.add('auto-theme');
+    body.setAttribute('data-system-theme', effective);
+  } else {
+    body.classList.add(effective);
+  }
+  root.setAttribute('data-theme', effective);  // backward compat
+  if (STATE.settings) STATE.settings.theme = theme;
 }
 
 // Listen to system theme changes (only effective when theme === 'auto')
@@ -3164,6 +3175,58 @@ function setupSettings() {
     await saveSettings();
     showToast('💾 บันทึกการตั้งค่าแล้ว', 'success');
   });
+
+  // ====================================================
+  // v0.10.0 fix: handlers ที่หายไปจาก codebase เดิม
+  // ====================================================
+
+  // === Branding: บันทึก ===
+  bindSettingsButton('#btnSaveBranding', async () => {
+    STATE.settings.hospitalName = $('#hospitalName')?.value?.trim() || 'โรงพยาบาลรือเสาะ';
+    STATE.settings.department = $('#department')?.value?.trim() || 'กลุ่มงานเภสัชกรรม';
+    STATE.settings.hashtag = $('#hashtag')?.value?.trim() || '#รพรือเสาะ #เภสัชกรรม';
+    STATE.settings.defaultDisclaimer = $('#defaultDisclaimer')?.value?.trim()
+      || 'ข้อมูลเพื่อการศึกษา ไม่ใช่คำแนะนำเฉพาะบุคคล โปรดปรึกษาเภสัชกร/แพทย์';
+    await saveSettings();
+    showToast('💾 บันทึก Branding เรียบร้อย ✅', 'success', 2000);
+  });
+
+  // === Safety Toggles: auto-save บน change ===
+  ['#approvalMode', '#contentValidator', '#autoDisclaimer'].forEach(sel => {
+    const el = $(sel);
+    if (!el) return;
+    el.addEventListener('change', async () => {
+      const key = sel.slice(1);
+      STATE.settings[key] = el.checked;
+      await saveSettings();
+      showToast(`💾 ${el.checked ? 'เปิด' : 'ปิด'} "${key}"`, 'info', 1200);
+    });
+  });
+
+  // === Reset all data ===
+  bindSettingsButton('#btnResetAll', async () => {
+    const confirm1 = confirm('⚠️ จะลบข้อมูลทั้งหมด — API keys, branding, topics, posts, คลังสื่อ, ซีรีส์, ตารางโพสต์\n\nยืนยัน?');
+    if (!confirm1) return;
+    const confirm2 = confirm('แน่ใจอีกครั้ง? ไม่สามารถกู้คืนได้');
+    if (!confirm2) return;
+    try {
+      // เคลียร์ chrome.storage
+      await chrome.storage.local.clear();
+      // เคลียร์ IndexedDB (warehouse)
+      if (window.ClipWarehouse) {
+        try { await window.ClipWarehouse.clearAll(); } catch (e) { /* ignore */ }
+      }
+      // เคลียร์ alarms
+      if (chrome.alarms?.clearAll) {
+        await new Promise(res => chrome.alarms.clearAll(res));
+      }
+      showToast('✅ รีเซ็ตทุกข้อมูลแล้ว — ปิด-เปิด side panel ใหม่', 'success', 4000);
+      setTimeout(() => location.reload(), 1500);
+    } catch (e) {
+      console.error('[RH Pharma] reset:', e);
+      showToast('❌ Error: ' + e.message, 'error');
+    }
+  });
 }
 
 // Helper: ใช้ใน setupSettings เพื่อ bind ปุ่มแบบมี null guard
@@ -3217,6 +3280,29 @@ function populateSettingsValues() {
   if (delayMin) delayMin.value = STATE.settings.delayMin || 800;
   const delayMax = $('#delayMax');
   if (delayMax) delayMax.value = STATE.settings.delayMax || 2000;
+
+  // ====================================================
+  // v0.10.0 fix: populate branding + safety fields
+  // ====================================================
+
+  // Branding
+  const hosp = $('#hospitalName');
+  if (hosp) hosp.value = STATE.settings.hospitalName || 'โรงพยาบาลรือเสาะ';
+  const dept = $('#department');
+  if (dept) dept.value = STATE.settings.department || 'กลุ่มงานเภสัชกรรม';
+  const hash = $('#hashtag');
+  if (hash) hash.value = STATE.settings.hashtag || '#รพรือเสาะ #เภสัชกรรม';
+  const disc = $('#defaultDisclaimer');
+  if (disc) disc.value = STATE.settings.defaultDisclaimer
+    || 'ข้อมูลเพื่อการศึกษา ไม่ใช่คำแนะนำเฉพาะบุคคล โปรดปรึกษาเภสัชกร/แพทย์';
+
+  // Safety toggles
+  const approval = $('#approvalMode');
+  if (approval) approval.checked = STATE.settings.approvalMode !== false;
+  const validator = $('#contentValidator');
+  if (validator) validator.checked = STATE.settings.contentValidator !== false;
+  const autoDisc = $('#autoDisclaimer');
+  if (autoDisc) autoDisc.checked = STATE.settings.autoDisclaimer !== false;
 }
 
 // =====================================================

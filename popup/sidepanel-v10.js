@@ -393,9 +393,13 @@
       return;
     }
 
+    // precheck API key
+    const apiOk = await checkApiKey();
+    if (!apiOk) return;
+
     const btn = pane.querySelector('#v10-series-gen');
     btn.disabled = true;
-    btn.innerHTML = '<span class="v10-loading"></span> กำลังสร้าง...';
+    btn.innerHTML = '<span class="v10-loading"></span> กำลังสร้าง... (อาจใช้เวลา 30-60 วินาที)';
 
     try {
       const series = await window.StorySeries.generateSeries({
@@ -406,12 +410,37 @@
         language: lang
       });
       await window.StorySeries.saveSeries(series);
-      toast('✓ สร้างซีรีส์ ' + series.totalEpisodes + ' ตอนสำเร็จ', 'success');
+      toast('✓ สร้างซีรีส์ ' + series.totalEpisodes + ' ตอนสำเร็จ', 'success', 3000);
       renderSeries(pane);
     } catch (e) {
-      toast('Error: ' + e.message, 'error');
+      console.error('[v10] generateSeries:', e);
+      toast('❌ ' + e.message, 'error', 6000);
       btn.disabled = false;
       btn.innerHTML = '✨ สร้างซีรีส์';
+    }
+  }
+
+  // ===== Precheck: มี API key หรือยัง =====
+  async function checkApiKey() {
+    try {
+      const data = await chrome.storage.local.get(['rhPharmaSettings']);
+      const s = data.rhPharmaSettings || {};
+      const provider = s.aiProvider || 'openai';
+      const keyMap = {
+        openai: s.openaiApiKey,
+        gemini: s.geminiApiKey,
+        claude: s.claudeApiKey
+      };
+      const key = keyMap[provider];
+      if (!key) {
+        const names = { openai: 'OpenAI', gemini: 'Gemini', claude: 'Claude' };
+        toast(`⚠️ ยังไม่ได้ตั้ง ${names[provider]} API Key — กดไอคอน ⚙️ มุมขวาบน → ใส่ key + บันทึก`, 'error', 7000);
+        return false;
+      }
+      return true;
+    } catch (e) {
+      toast('❌ อ่าน settings ไม่ได้: ' + e.message, 'error');
+      return false;
     }
   }
 
@@ -586,9 +615,21 @@
 
     if (!content) { toast('กรุณาใส่เนื้อหา', 'error'); return; }
 
+    // precheck: API key (สำหรับ AI script generation + OpenAI TTS)
+    const apiOk = await checkApiKey();
+    if (!apiOk) return;
+    if (method === 'openai') {
+      // OpenAI TTS ต้องใช้ openaiApiKey เฉพาะ ไม่ใช่ provider อื่น
+      const data = await chrome.storage.local.get(['rhPharmaSettings']);
+      if (!data.rhPharmaSettings?.openaiApiKey) {
+        toast('⚠️ OpenAI TTS ต้องใช้ OpenAI API Key — ไปตั้งที่ ⚙️', 'error', 6000);
+        return;
+      }
+    }
+
     const btn = pane.querySelector('#v10-pod-gen');
     btn.disabled = true;
-    btn.innerHTML = '<span class="v10-loading"></span> กำลังสร้าง...';
+    btn.innerHTML = '<span class="v10-loading"></span> กำลังสร้าง... (30-90 วินาที)';
 
     try {
       const r = await window.PodcastGenerator.generatePodcast(content, {
@@ -615,7 +656,8 @@
       result.innerHTML = html;
       toast('✓ สร้าง podcast สำเร็จ', 'success');
     } catch (e) {
-      toast('Error: ' + e.message, 'error');
+      console.error('[v10] generatePodcast:', e);
+      toast('❌ ' + e.message, 'error', 6000);
     } finally {
       btn.disabled = false;
       btn.innerHTML = '🎙️ สร้าง Podcast';
